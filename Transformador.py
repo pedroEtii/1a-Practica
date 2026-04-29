@@ -1,15 +1,28 @@
 import json
+import os
+import sys  # Importante para avisar al orquestador del error
 
 def transformar_datos():
     print("🧹 Iniciando limpieza de datos...")
     
-    # 1. Leer el archivo crudo
+    # --- INICIO DE LA PARTE NUEVA / ROBUSTA ---
+    # 1. Comprobamos si el archivo existe físicamente
+    if not os.path.exists('noticias_raw.json'):
+        print("❌ ERROR: El archivo noticias_raw.json no existe.")
+        sys.exit(1) # Esto le dice al main_pipeline: "¡Para! Algo salió mal"
+
+    # 2. Intentamos leer el archivo con seguridad
     try:
         with open('noticias_raw.json', 'r', encoding='utf-8') as f:
             articulos = json.load(f)
-    except FileNotFoundError:
-        print("❌ No se encontró el archivo noticias_raw.json. Ejecuta primero el extractor.")
-        return
+            
+        if not articulos:
+            print("⚠️ El archivo está vacío. No hay noticias para procesar.")
+            sys.exit(1)
+            
+    except json.JSONDecodeError:
+        print("❌ ERROR: El archivo JSON está corrupto.")
+        sys.exit(1)
 
     noticias_limpias = []
 
